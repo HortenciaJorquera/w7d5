@@ -1,21 +1,52 @@
 import React from 'react';
 import countries from '../countries.json';
 import { Link } from 'react-router-dom';
-
+import axios from 'axios';
 
 class CountryDetail extends React.Component {
 
+  state = {
+    country: null
+  }
+
+  getCountryData = () => {
+    const countryCode = this.props.match.params.id;
+    axios.get(`/api/countries/${countryCode}`)
+      .then(response => {
+        const country = response.data;
+        // console.log(country);
+        this.setState({
+          country: country
+        })
+      })
+  }
+
+  componentDidMount() {
+    this.getCountryData();
+  }
+
+  componentDidUpdate(prevProps) {
+    console.log('current props:', this.props.match.params.id)
+    console.log('previous props:', prevProps.match.params.id)
+    if (prevProps.match.params.id !== this.props.match.params.id) {
+      this.getCountryData();
+    }
+  }
+
   render() {
 
-    const getCountryByCode = cca3 => countries.find(el => el.cca3 === cca3);
+    // this is happening on the server now
+    // const getCountryByCode = cca3 => countries.find(el => el.cca3 === cca3);
 
-    const country = { ...getCountryByCode(this.props.match.params.id) };
+    // const country = { ...getCountryByCode(this.props.match.params.id) };
 
-    console.log(country);
+    // console.log(country);
 
-    const borders = country.borders.map(cca3 => getCountryByCode(cca3));
-
-    console.log(country);
+    // const borders = country.borders.map(cca3 => getCountryByCode(cca3));
+    // console.log(country);
+    const country = this.state.country;
+    // console.log(country);
+    if (!country) return <>Loading...</>;
     return (
       <div className="col-7">
         <h1>{country.name.common}</h1>
@@ -33,12 +64,12 @@ class CountryDetail extends React.Component {
                 <sup>2</sup>
               </td>
             </tr>
-            {borders.length > 0 && (
+            {country.borders.length > 0 && (
               <tr>
                 <td>Borders</td>
                 <td>
                   <ul>
-                    {borders.map(el => {
+                    {country.borders.map(el => {
                       return (
                         <li key={el.cca3}>
                           <Link to={`/${el.cca3}`}>
